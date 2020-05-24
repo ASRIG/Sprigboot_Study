@@ -34,7 +34,18 @@
 			<artifactId>jquery</artifactId>
 			<version>3.5.1</version>
 		</dependency>
-		
+		<!-- H2 데이터베이스 -->
+		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.197</version>
+		</dependency>
+		<!-- Spring boot Starter DATA JPA -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
