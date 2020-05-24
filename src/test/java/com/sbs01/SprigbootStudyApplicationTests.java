@@ -1,10 +1,10 @@
-package com.spring.hstb01;
+package com.sbs01;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class HongYoutubeStb01ApplicationTests {
+class SprigbootStudyApplicationTests {
 
 	@Test
 	void contextLoads() {
