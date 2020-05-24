@@ -3,6 +3,7 @@ package com.sbs01.dto;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 // 데이터베이스에서 사용가능한 객체임을 나타내는 Entity 어노테이션
@@ -11,7 +12,7 @@ public class User {
 	// Primary Key를 주고싶은 경우 @Id 어노테이션 사용.
 	@Id
 	// 이 아이디값을 자동으로 1씩 증가시켜줌.
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	// 제한사항 설정.

@@ -1,0 +1,1 @@
+insert into user (email, name, password, user_id) values ('admin@gmial.com', 'admin', 'admin', 'admin'), ('admin@gmial.com', 'a', 'a', 'a');

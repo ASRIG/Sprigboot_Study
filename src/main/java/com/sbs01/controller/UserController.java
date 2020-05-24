@@ -3,6 +3,8 @@ package com.sbs01.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +25,29 @@ public class UserController {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@PostMapping("/login")
+	public String login(String userId, String password, HttpSession session) {
+		User user = userRepository.findByUserId(userId);
+		if(user == null)
+			return "redirect:/users/loginForm";
+		
+		if(!password.equals(user.getPassword()))
+			return "redirect:/users/loginForm";
+		
+		session.setAttribute("user", user);
+		
+		return "redirect:/";
+	}
+	
+	@GetMapping("/logout")
+	public String logout(HttpSession session) {
+		// 해당하는 애트리뷰트를 제거하거나
+		session.removeAttribute("user");
+		// invalidate 해버리기
+//		session.invalidate();
+		return "redirect:/";
+	}
 
 	@PostMapping("")
 	public String create(User user) {
@@ -59,7 +84,7 @@ public class UserController {
 		return "/user/profile";
 	}
 	
-	@RequestMapping("/login")
+	@RequestMapping("/loginForm")
 	public String goLogin() {
 		return "/user/login";
 	}

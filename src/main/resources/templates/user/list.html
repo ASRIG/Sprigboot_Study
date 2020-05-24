@@ -7,7 +7,7 @@
 <body>
 	<!-- INCLUDE -->
 	{{> /include/navbar}}
-	
+
 	<div class="container" id="main">
 		<div class="col-md-10 col-md-offset-1">
 			<div class="panel panel-default">
@@ -28,7 +28,8 @@
 							<td>{{userId}}</td>
 							<td>{{name}}</td>
 							<td>{{email}}</td>
-							<td><a href="/users/{{id}}/form" class="btn btn-success" role="button">수정</a></td>
+							<td><a href="/users/{{id}}/form" class="btn btn-success"
+								role="button">수정</a></td>
 						</tr>
 						{{/users}}
 					</tbody>
@@ -37,9 +38,7 @@
 		</div>
 	</div>
 
-	<!-- script references -->
-	<script src="../js/jquery-2.2.0.min.js"></script>
-	<script src="../js/bootstrap.min.js"></script>
-	<script src="../js/scripts.js"></script>
+	<!-- Footer Include -->
+	{{> /include/footer}}
 </body>
 </html>
