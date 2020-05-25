@@ -23,6 +23,13 @@ public class QuestionController {
 
 	@Autowired
 	private QuestionRepository questionRepository;
+	
+	private boolean hasPermission(HttpSession session, Question question) {
+		if (!HttpSessionUtils.isLoginUser(session)) throw new IllegalStateException("로그인이 필요합니다.");
+		User loginUser = HttpSessionUtils.getUserFromSession(session);
+		if (!question.isSameWriter(loginUser)) throw new IllegalStateException("자신이 쓴 글만 수정, 삭제가 가능합니다.");
+		return true;
+	}
 
 	@GetMapping("/form")
 	public String form(HttpSession session, Model model) {
@@ -54,49 +61,55 @@ public class QuestionController {
 
 	@GetMapping("/{id}/form")
 	public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
-		// 로그인 여부 파악
-		if (!HttpSessionUtils.isLoginUser(session))
-			return "redirect:/users/loginForm";
-		// 내 글인지 파악
-		User sessionUser = HttpSessionUtils.getUserFromSession(session);
 		Question question = questionRepository.findById(id).get();
-		if (!question.isSameWriter(sessionUser))
-			return String.format("redirect:/");
-
-		model.addAttribute("question", question);
-		return "/qna/updateForm";
+		try {
+			hasPermission(session, question);
+			model.addAttribute("question", question);
+			return "/qna/updateForm";
+		}catch(IllegalStateException e){
+			model.addAttribute("errorMessage", e.getMessage());
+			return "/user/login";
+		}
 	}
 
 	@PutMapping("/{id}")
-	public String update(@PathVariable Long id, String title, String contents, HttpSession session) {
-		// 로그인 여부 파악
-		if (!HttpSessionUtils.isLoginUser(session))
-			return "redirect:/users/loginForm";
-		// 내 글인지 파악
-		User sessionUser = HttpSessionUtils.getUserFromSession(session);
+	public String update(@PathVariable Long id, String title, String contents, HttpSession session, Model model) {
 		Question question = questionRepository.findById(id).get();
-		if (!question.isSameWriter(sessionUser))
-			return String.format("redirect:/");
+		try {
+			hasPermission(session, question);
+			question.update(title, contents);
+			// 이미 값이 있다면 업데이트 없을 경우 새로 생성한다.
+			questionRepository.save(question);
+			return String.format("redirect:/questions/%d", id);
+		}catch(IllegalStateException e){
+			model.addAttribute("errorMessage", e.getMessage());
+			return "/user/login";
+		}
+		
+//		// 로그인 여부 파악
+//		if (!HttpSessionUtils.isLoginUser(session))
+//			return "redirect:/users/loginForm";
+//		// 내 글인지 파악
+//		User sessionUser = HttpSessionUtils.getUserFromSession(session);
+//		Question question = questionRepository.findById(id).get();
+//		if (!question.isSameWriter(sessionUser))
+//			return String.format("redirect:/");
 
-		question.update(title, contents);
-		// 이미 값이 있다면 업데이트 없을 경우 새로 생성한다.
-		questionRepository.save(question);
-		return String.format("redirect:/questions/%d", id);
+		
 	}
 
 	@DeleteMapping("/{id}")
-	public String delete(@PathVariable Long id, HttpSession session) {
-		// 로그인 여부 파악
-		if (!HttpSessionUtils.isLoginUser(session))
-			return "redirect:/users/loginForm";
-		// 내 글인지 파악
-		User sessionUser = HttpSessionUtils.getUserFromSession(session);
+	public String delete(@PathVariable Long id, HttpSession session, Model model) {
 		Question question = questionRepository.findById(id).get();
-		if (!question.isSameWriter(sessionUser))
+		try {
+			hasPermission(session, question);
+			// 삭제 repository
+			questionRepository.deleteById(id);
 			return String.format("redirect:/");
-
-		// 삭제 repository
-		questionRepository.deleteById(id);
-		return String.format("redirect:/");
+		}catch(IllegalStateException e){
+			model.addAttribute("errorMessage", e.getMessage());
+			return "/user/login";
+		}
+		
 	}
 }
