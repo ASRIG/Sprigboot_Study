@@ -15,10 +15,15 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
+import org.springframework.beans.factory.annotation.Value;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 public class Question {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonProperty
 	private Long id;
 
 	// 이런식으로 정의하는 것은 객체지향적으로 바함직하지 않음.
@@ -28,18 +33,33 @@ public class Question {
 	@ManyToOne
 	// 만들어지는 forienkey의 이름을 지정할 수 있음.
 	@JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
+	@JsonProperty
 	private User writer;
 
 	// mappedBy는 해당하는 Answer에서 정의한 ManytoOne의 변수이름으로 정의
 	@OneToMany(mappedBy = "question")
 	@OrderBy("id ASC")
 	private List<Answer> answers;
+	
+	@JsonProperty
+	// 0은 안넣어져 ㅜ
+	private Integer countOfAnswer = 0;
+	
+	public void addAnswer() {
+		this.countOfAnswer++;
+	}
+	
+	public void deleteAnswer() {
+		this.countOfAnswer--;
+	}
 
 	// 만들어지는 시간 정의
 	private LocalDateTime createDate;
 
+	@JsonProperty
 	private String title;
 	@Lob
+	@JsonProperty
 	private String contents;
 
 	public Question() {

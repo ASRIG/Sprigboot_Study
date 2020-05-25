@@ -6,6 +6,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 // 데이터베이스에서 사용가능한 객체임을 나타내는 Entity 어노테이션
 @Entity
 public class User {
@@ -13,14 +16,21 @@ public class User {
 	@Id
 	// 이 아이디값을 자동으로 1씩 증가시켜줌.
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	// JSON으로 만들어내도록 설정
+	@JsonProperty
 	private Long id;
 	
 	// 제한사항 설정.
 	@Column(nullable = false, length=30, unique = true)
+	@JsonProperty
 	private String userId;
 	
+	// 비밀번호는 보내기 싫어!
+	@JsonIgnore
 	private String password;
+	@JsonProperty
 	private String name;
+	@JsonProperty
 	private String email;
 	
 	public User() {}
@@ -54,14 +64,8 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getName() {
-		return name;
-	}
 	public void setName(String name) {
 		this.name = name;
-	}
-	public String getEmail() {
-		return email;
 	}
 	public void setEmail(String email) {
 		this.email = email;

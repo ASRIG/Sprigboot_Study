@@ -16,6 +16,7 @@ import com.sbs01.dto.Question;
 import com.sbs01.dto.User;
 import com.sbs01.repository.QuestionRepository;
 import com.sbs01.utils.HttpSessionUtils;
+import com.sbs01.utils.Result;
 
 @Controller
 @RequestMapping("/questions")
@@ -23,11 +24,23 @@ public class QuestionController {
 
 	@Autowired
 	private QuestionRepository questionRepository;
-	
-	private boolean hasPermission(HttpSession session, Question question) {
-		if (!HttpSessionUtils.isLoginUser(session)) throw new IllegalStateException("로그인이 필요합니다.");
+
+	// 깔끔하게 중복을 제거하기 위한 Result 유틸
+	private Result valid(HttpSession session, Question question) {
+		if (!HttpSessionUtils.isLoginUser(session))
+			return Result.fail("로그인이 필요합니다.");
 		User loginUser = HttpSessionUtils.getUserFromSession(session);
-		if (!question.isSameWriter(loginUser)) throw new IllegalStateException("자신이 쓴 글만 수정, 삭제가 가능합니다.");
+		if (!question.isSameWriter(loginUser))
+			return Result.fail("자신이 쓴 글만 수정, 삭제가 가능합니다.");
+		return Result.ok();
+	}
+
+	private boolean hasPermission(HttpSession session, Question question) {
+		if (!HttpSessionUtils.isLoginUser(session))
+			throw new IllegalStateException("로그인이 필요합니다.");
+		User loginUser = HttpSessionUtils.getUserFromSession(session);
+		if (!question.isSameWriter(loginUser))
+			throw new IllegalStateException("자신이 쓴 글만 수정, 삭제가 가능합니다.");
 		return true;
 	}
 
@@ -61,15 +74,15 @@ public class QuestionController {
 
 	@GetMapping("/{id}/form")
 	public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
+		// 이런식으로 Result를 써서 구현할 수도 있고 밑에처럼 써도 된다.
 		Question question = questionRepository.findById(id).get();
-		try {
-			hasPermission(session, question);
-			model.addAttribute("question", question);
-			return "/qna/updateForm";
-		}catch(IllegalStateException e){
-			model.addAttribute("errorMessage", e.getMessage());
+		Result result = valid(session, question);
+		if (!result.isValid()) {
+			model.addAttribute("errorMessage", result.getErrorMessage());
 			return "/user/login";
 		}
+		model.addAttribute("question", question);
+		return "/qna/updateForm";
 	}
 
 	@PutMapping("/{id}")
@@ -81,11 +94,11 @@ public class QuestionController {
 			// 이미 값이 있다면 업데이트 없을 경우 새로 생성한다.
 			questionRepository.save(question);
 			return String.format("redirect:/questions/%d", id);
-		}catch(IllegalStateException e){
+		} catch (IllegalStateException e) {
 			model.addAttribute("errorMessage", e.getMessage());
 			return "/user/login";
 		}
-		
+
 //		// 로그인 여부 파악
 //		if (!HttpSessionUtils.isLoginUser(session))
 //			return "redirect:/users/loginForm";
@@ -95,7 +108,6 @@ public class QuestionController {
 //		if (!question.isSameWriter(sessionUser))
 //			return String.format("redirect:/");
 
-		
 	}
 
 	@DeleteMapping("/{id}")
@@ -106,10 +118,10 @@ public class QuestionController {
 			// 삭제 repository
 			questionRepository.deleteById(id);
 			return String.format("redirect:/");
-		}catch(IllegalStateException e){
+		} catch (IllegalStateException e) {
 			model.addAttribute("errorMessage", e.getMessage());
 			return "/user/login";
 		}
-		
+
 	}
 }

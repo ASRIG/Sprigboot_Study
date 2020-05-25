@@ -11,26 +11,33 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 public class Answer {
 	@Id
 	@GeneratedValue
+	@JsonProperty
 	private Long id;
 
 	// 답변과 작성자의 관계는 Many To One 관계이다.
 	@ManyToOne
 	// 만들어지는 forienkey의 이름을 지정할 수 있음.
 	@JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_writer"))
+	@JsonProperty
 	private User writer;
 
 	@ManyToOne
 	@JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_question"))
+	@JsonProperty
 	private Question question;
 
 	// 만들어지는 시간 정의
+	@JsonProperty
 	private LocalDateTime createDate;
 
 	@Lob
+	@JsonProperty
 	private String contents;
 
 	public Answer() {
@@ -79,6 +86,10 @@ public class Answer {
 		if (createDate == null)
 			return "";
 		return createDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
+	}
+
+	public boolean isSameWriter(User loginUser) {
+		return loginUser.equals(this.writer);
 	}
 
 }
