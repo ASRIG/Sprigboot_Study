@@ -16,7 +16,7 @@ public class User {
 	private Long id;
 	
 	// 제한사항 설정.
-	@Column(nullable = false, length=30)
+	@Column(nullable = false, length=30, unique = true)
 	private String userId;
 	
 	private String password;
@@ -24,12 +24,23 @@ public class User {
 	private String email;
 	
 	public User() {}
-	
-	
 	public User(String userId, String password, String name, String email) {
 		setUserId(userId); setPassword(password); setName(name); setEmail(email);
 	}
-
+	
+	// Method
+	public boolean matchedPassword(String password) {
+		if(password == null) return false;
+		return this.password.equals(password);
+	}
+	
+	// G/S
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getUserId() {
 		return userId;

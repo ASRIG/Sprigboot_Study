@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.sbs01.dto.User;
 import com.sbs01.repository.UserRepository;
+import com.sbs01.utils.HttpSessionUtils;
 
 @Controller
 // 중복을 제거할 수 있다. 대표 URL
@@ -32,10 +33,11 @@ public class UserController {
 		if(user == null)
 			return "redirect:/users/loginForm";
 		
-		if(!password.equals(user.getPassword()))
+		// 중복제거를 위한 로직처리를 할 수 있음
+		if(!user.matchedPassword(password))
 			return "redirect:/users/loginForm";
 		
-		session.setAttribute("user", user);
+		session.setAttribute(HttpSessionUtils.USER_SESSION_KEY, user);
 		
 		return "redirect:/";
 	}
@@ -43,7 +45,7 @@ public class UserController {
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
 		// 해당하는 애트리뷰트를 제거하거나
-		session.removeAttribute("user");
+		session.removeAttribute(HttpSessionUtils.USER_SESSION_KEY);
 		// invalidate 해버리기
 //		session.invalidate();
 		return "redirect:/";
@@ -93,7 +95,11 @@ public class UserController {
 	// id에 대한 정보에 대한 form에 해당하는 컨트롤러를 만들 수 있다.
 	@GetMapping("/{id}/form")
 	// path의 값을 변수로 사용할 때, PathVariable 어노테이션 사용 위의 {}안에 있는 값을 그대로 밑에 적어야함.
-	public String updateForm(@PathVariable Long id, Model model) {
+	public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
+		if(!HttpSessionUtils.isLoginUser(session)) return "redirect:/users/loginForm";
+		User sessionUser = HttpSessionUtils.getUserFromSession(session);
+		if(sessionUser.getId() != id) return "redirect:/users/loginForm";
+		
 		// 한개만 찾아서 전달
 		System.out.println("[{id}/form Start]");
 		User user = userRepository.findById(id).get();
@@ -104,9 +110,12 @@ public class UserController {
 	
 	// Post로 해도 괜찮지만 hidden을 이용해 원래 HTTP프로토콜에 맞는 putmapping 해주기
 	@PutMapping("/{id}")
-	public String update(@PathVariable Long id, User updateUser) {
+	public String update(@PathVariable Long id, User updateUser, HttpSession session) {
 		System.out.println("[{id} Start]");
-		User user = userRepository.findById(id).get();
+		
+		if(!HttpSessionUtils.isLoginUser(session)) return "redirect:/users/loginForm";
+		User user = HttpSessionUtils.getUserFromSession(session);
+		
 		System.out.println("\t[update before]");
 		System.out.println(user);
 		user.update(updateUser);
@@ -116,6 +125,7 @@ public class UserController {
 		// 현재 해당하는 아이디 값이 없으면 추가를 하고 있으면 업데이트를 한다.
 		userRepository.save(user);
 		return "redirect:/users";
+		// 27장
 	}
 	
 }
